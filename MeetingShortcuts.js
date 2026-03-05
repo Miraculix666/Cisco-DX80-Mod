@@ -1,30 +1,85 @@
+// ============================================================
+// Cisco DX80 - Meeting Shortcuts Macro (V2 - Korrigiert)
+// ============================================================
+// WICHTIG: Das DX80 (CE 9.15) unterstuetzt KEINE WebEngine!
+// Der Browser-Befehl (UserInterface WebView Display) ist 
+// hardwareseitig nicht verfuegbar (ARM Cortex-A9, zu alt).
+//
+// Stattdessen: SIP-Dial-Logik fuer Teams/Zoom via Meeting-ID
+// ============================================================
+
 const xapi = require('xapi');
 
-/**
- * Cisco DX80 Meeting Shortcuts Macro
- * Author: Antigravity AI
- * Version: 1.0
- * 
- * Description:
- * This macro listens for clicks on UI Extension widgets (Action Buttons)
- * with the IDs 'teams' and 'zoom' and opens the respective web versions
- * using the DX80 Web Engine.
- */
+// Konfiguration
+const CONFIG = {
+  // Zoom SIP Adresse (SIP-Einwahl fuer Zoom Meetings)
+  zoomSipDomain: 'zoomcrc.com',
+  // Teams SIP Adresse (SIP-Einwahl fuer Teams Meetings)
+  teamsSipDomain: '66.198.25.10',  // m.lync.com Alternative
+};
 
+function dialMeeting(service, meetingId) {
+  let sipAddress = '';
+  
+  if (service === 'zoom') {
+    // Zoom SIP Format: MEETINGID@zoomcrc.com
+    sipAddress = meetingId + '@' + CONFIG.zoomSipDomain;
+  } else if (service === 'teams') {
+    // Teams SIP Format: meetingid@m.lync.com
+    sipAddress = meetingId + '@' + CONFIG.teamsSipDomain;
+  }
+  
+  console.log('Dialing: ' + sipAddress);
+  xapi.command('Dial', { Number: sipAddress }).catch(e => {
+    console.error('Dial error: ' + e.message);
+  });
+}
+
+// Teams Button Handler
 xapi.event.on('UserInterface Extensions Widget Action', (event) => {
-    if (event.Type === 'clicked') {
-        if (event.WidgetId === 'teams') {
-            console.log('Opening Teams...');
-            xapi.command('UserInterface WebView Display', { 
-                Url: 'https://teams.microsoft.com',
-                Target: 'Full'
-            });
-        } else if (event.WidgetId === 'zoom') {
-            console.log('Opening Zoom...');
-            xapi.command('UserInterface WebView Display', { 
-                Url: 'https://zoom.us/join',
-                Target: 'Full'
-            });
-        }
-    }
+  if (event.Type !== 'clicked') return;
+
+  // Teams Meeting-ID Eingabe
+  if (event.WidgetId === 'teams') {
+    xapi.command('UserInterface Message TextInput Display', {
+      FeedbackId: 'teams_meetingid',
+      Title: 'Microsoft Teams',
+      Text: 'Geben Sie die Meeting-ID oder SIP-Adresse ein:',
+      Placeholder: 'z.B. 123456789 oder user@company.com',
+      InputType: 'SingleLine',
+      SubmitText: 'Verbinden',
+    }).catch(e => console.error(e));
+  }
+
+  // Zoom Meeting-ID Eingabe
+  if (event.WidgetId === 'zoom') {
+    xapi.command('UserInterface Message TextInput Display', {
+      FeedbackId: 'zoom_meetingid',
+      Title: 'Zoom Meeting',
+      Text: 'Geben Sie die Zoom Meeting-ID ein:',
+      Placeholder: 'z.B. 123 456 789',
+      InputType: 'SingleLine',
+      SubmitText: 'Verbinden',
+    }).catch(e => console.error(e));
+  }
 });
+
+// Eingabe-Antwort verarbeiten
+xapi.event.on('UserInterface Message TextInput Response', (event) => {
+  const input = event.Text.replace(/\s/g, ''); // Leerzeichen entfernen
+  
+  if (event.FeedbackId === 'teams_meetingid') {
+    if (input.includes('@')) {
+      // Direktwahl einer SIP-Adresse
+      xapi.command('Dial', { Number: input });
+    } else {
+      dialMeeting('teams', input);
+    }
+  }
+  
+  if (event.FeedbackId === 'zoom_meetingid') {
+    dialMeeting('zoom', input);
+  }
+});
+
+console.log('Meeting Shortcuts Macro V2 geladen.');
