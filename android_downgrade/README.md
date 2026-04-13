@@ -7,8 +7,12 @@ The required firmware files (`s52040ce8_2_1.pkg` and `dx80.ce8.2.0-syn213.rel.pk
 
 ## Prerequisites
 
-1. Download the downgrade firmware `s52040ce8_2_1.pkg` from Cisco.
-2. Download the conversion firmware `dx80.ce8.2.0-syn213.rel.pkg` from Cisco.
+You must log in to the Cisco portal to download these files:
+
+1. Download the downgrade firmware `s52040ce8_2_1.pkg` from Cisco:
+   - [Download CE 8.2.1 from Cisco Software Central](https://software.cisco.com/download/home/286267308/type/282074288/release/CE8.2.1)
+2. Download the conversion firmware `dx80.ce8.2.0-syn213.rel.pkg` from Cisco. This file is often provided alongside CE 8.2 or Android 10 releases:
+   - [Download DX80 Android Conversion package](https://software.cisco.com/download/home/286267308/type/282074288/release/CE8.2.1)
 3. Replace the placeholder files in this directory with the actual downloaded files.
 
 ## Procedure
