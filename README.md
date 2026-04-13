@@ -16,6 +16,7 @@ This repository contains the configuration, macros, and documentation to "unchai
 - `SystemMonitor.js`: Macro for real-time room and device diagnostics.
 - `README.md`: This guide.
 - `WALKTHROUGH.md`: Step-by-step visual guide of the modifications.
+- `android_downgrade/`: Files and instructions for converting back to Android firmware.
 
 ## Installation / Activation
 
@@ -37,6 +38,12 @@ xConfiguration Proximity Mode: On
 
 ### 3. SIP Configuration
 Configure your provider (Sipgate/Fritzbox) under **Settings** > **Configuration** > **SIP** using the credentials provided in your private portal.
+
+## Revert to Android
+
+If you decide that the CE software does not meet your needs, or if you want to use the native Android environment, we have included documentation and placeholders for the downgrade process.
+
+See the [Android Downgrade Guide](android_downgrade/README.md) for full instructions.
 
 ## Advanced Mods (Community Insights)
 
