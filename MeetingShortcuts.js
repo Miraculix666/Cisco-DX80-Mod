@@ -66,19 +66,25 @@ xapi.event.on('UserInterface Extensions Widget Action', (event) => {
 
 // Eingabe-Antwort verarbeiten
 xapi.event.on('UserInterface Message TextInput Response', (event) => {
+  if (!event || !event.Text) return;
   const input = event.Text.replace(/\s/g, ''); // Leerzeichen entfernen
   
   if (event.FeedbackId === 'teams_meetingid') {
     if (input.includes('@')) {
       // Direktwahl einer SIP-Adresse
-      xapi.command('Dial', { Number: input });
+      xapi.command('Dial', { Number: input }).catch(e => console.error('Dial error: ' + e.message));
     } else {
       dialMeeting('teams', input);
     }
   }
   
   if (event.FeedbackId === 'zoom_meetingid') {
-    dialMeeting('zoom', input);
+    if (input.includes('@')) {
+      // Direktwahl einer SIP-Adresse für Zoom
+      xapi.command('Dial', { Number: input }).catch(e => console.error('Dial error: ' + e.message));
+    } else {
+      dialMeeting('zoom', input);
+    }
   }
 });
 
