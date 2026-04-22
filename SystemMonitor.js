@@ -1,4 +1,5 @@
 const xapi = require('xapi');
+const CONFIG = require('./config.js');
 
 /**
  * Cisco DX80 System Monitor Macro
@@ -19,5 +20,5 @@ async function updateStatus() {
 }
 
 // Update every 5 minutes
-setInterval(updateStatus, 300000);
+setInterval(updateStatus, CONFIG.systemMonitorInterval);
 updateStatus();

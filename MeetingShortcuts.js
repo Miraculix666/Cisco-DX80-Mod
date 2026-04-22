@@ -9,14 +9,7 @@
 // ============================================================
 
 const xapi = require('xapi');
-
-// Konfiguration
-const CONFIG = {
-  // Zoom SIP Adresse (SIP-Einwahl fuer Zoom Meetings)
-  zoomSipDomain: 'zoomcrc.com',
-  // Teams SIP Adresse (SIP-Einwahl fuer Teams Meetings)
-  teamsSipDomain: '66.198.25.10',  // m.lync.com Alternative
-};
+const CONFIG = require('./config.js');
 
 function dialMeeting(service, meetingId) {
   let sipAddress = '';
