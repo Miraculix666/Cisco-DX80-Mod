@@ -8,6 +8,7 @@ This repository contains the configuration, macros, and documentation to "unchai
 - **Microservice Shortcuts**: Custom UI buttons for **Microsoft Teams** and **Zoom** via the internal Web Engine.
 - **Web Browser Unlocked**: URL bar enabled for unrestricted web navigation.
 - **Advanced UI**: Global Dark Mode, Proximity (Wireless Sharing), and Standby optimizations.
+- **USB Passthrough / Webcam Mode**: Enable your DX80 to act as a USB camera and display for a connected PC.
 - **Macros**: Custom JavaScript logic for UI interaction and system monitoring.
 
 ## Repository Structure
@@ -21,7 +22,9 @@ This repository contains the configuration, macros, and documentation to "unchai
 ## Installation / Activation
 
 ### 1. Enable Web Engine & Features
+
 Run these commands in the **Developer API** (xAPI) terminal:
+
 ```bash
 xConfiguration UserInterface WebEngine Mode: On
 xConfiguration UserInterface WebEngine Features URLBar: On
@@ -30,13 +33,25 @@ xConfiguration UserInterface Features Personalization: Allow
 xConfiguration Proximity Mode: On
 ```
 
+### 1b. Enable USB Camera Sharing (PC Passthrough)
+
+To ensure the DX80 can share its camera via USB with a connected PC (e.g., for use in desktop Teams or Zoom calls), you must enable USB mode. The quickest way is to run the following in the terminal:
+
+```bash
+xConfiguration Video Output Webcam USBMode: On
+```
+
+If your firmware version uses slightly different commands, you can alternatively enable USB passthrough mode in the device's web interface or via Control Hub under the Video/USB settings.
+
 ### 2. Deploy Macros
+
 1. Go to **Macro Editor**.
 2. Create two new macros: `MeetingShortcuts` and `SystemMonitor`.
 3. Paste the contents of the respective `.js` files from this repo.
 4. Save and **Enable** both macros.
 
 ### 3. SIP Configuration
+
 Configure your provider (Sipgate/Fritzbox) under **Settings** > **Configuration** > **SIP** using the credentials provided in your private portal.
 
 ## Revert to Android
