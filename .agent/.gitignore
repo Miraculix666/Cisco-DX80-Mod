@@ -1,0 +1,86 @@
+# ============================================================
+# FILE: .gitignore
+# PURPOSE: Standard ignore patterns for the agent framework
+# ============================================================
+
+# ── OS & Editor ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/settings.json   # Keep .vscode/extensions.json
+*.suo
+*.user
+
+# ── Scripts / Locks ───────────────────────────────────────────
+*.bak                   # Backup files from sed -i.bak
+*.tmp
+
+# ── Dump processed (track inbox structure, not content) ───────
+dump/inbox/*
+!dump/inbox/.gitkeep
+# dump/processed/ IS tracked (analysis notes are valuable)
+
+# ── Language: Node.js ─────────────────────────────────────────
+node_modules/
+dist/
+build/
+.npm
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.local
+.env.*.local
+coverage/
+.nyc_output/
+
+# ── Language: Python ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ── Language: Go ──────────────────────────────────────────────
+*.exe
+*.test
+vendor/
+
+# ── Language: Rust ────────────────────────────────────────────
+target/
+Cargo.lock     # Keep for binaries, add to allow list if needed
+
+# ── Language: Java ────────────────────────────────────────────
+*.class
+*.jar
+*.war
+target/
+.gradle/
+build/
+
+# ── CI / Secrets ──────────────────────────────────────────────
+.env*
+!.env.example
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ── Framework ─────────────────────────────────────────────────
+# Never ignore .agent/ — it's critical framework data
+# Never ignore docs/ — documentation must be tracked

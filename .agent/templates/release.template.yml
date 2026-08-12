@@ -1,0 +1,146 @@
+# ============================================================
+# FILE: .github/workflows/release.yml
+# PURPOSE: Release pipeline — triggered on PR merge to release
+# DEPENDS ON: ci.yml (must pass), docs/CHANGELOG.md
+# DEPENDED ON BY: Production deployments
+# ============================================================
+
+name: 🚀 Release Pipeline
+
+on:
+  push:
+    branches: [release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v1.2.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+
+  # ── [1] Validate Release ─────────────────────────────────
+  validate-release:
+    name: ✅ Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🏥 Framework Health
+        run: bash scripts/health-check.sh
+
+      - name: 📋 Validate CHANGELOG
+        run: |
+          echo "Checking CHANGELOG.md is updated..."
+          if grep -q "\[Unreleased\]" docs/CHANGELOG.md; then
+            # Check if unreleased section has content
+            UNRELEASED=$(awk '/## \[Unreleased\]/{found=1; next} /^## \[/{found=0} found && NF' docs/CHANGELOG.md)
+            if [[ -z "$UNRELEASED" || "$UNRELEASED" == *"nothing yet"* ]]; then
+              echo "::warning::No new changes documented in [Unreleased] section"
+            else
+              echo "✅ CHANGELOG has unreleased content"
+            fi
+          fi
+
+      - name: 🏷️ Determine Version
+        id: version
+        run: |
+          if [[ -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Auto-determine from latest tag
+            LATEST=$(git tag --sort=-version:refname | head -1 || echo "v0.0.0")
+            echo "Latest tag: $LATEST"
+            # Bump patch by default
+            IFS='.' read -r major minor patch <<< "${LATEST#v}"
+            VERSION="v${major}.${minor}.$((patch + 1))"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Release version: $VERSION"
+
+  # ── [2] Full Test Suite ──────────────────────────────────
+  full-test:
+    name: 🧪 Full Test Suite
+    runs-on: ubuntu-latest
+    needs: [validate-release]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 🧪 Run All Tests
+        run: |
+          bash scripts/health-check.sh
+          bash scripts/consolidate.sh --report-only
+          echo "✅ Framework tests passed"
+          # Add your full test suite command here
+
+  # ── [3] Create Release ───────────────────────────────────
+  create-release:
+    name: 📦 Create Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, full-test]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🏷️ Create Tag
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "$VERSION"
+          echo "✅ Tag $VERSION created"
+
+      - name: 📋 Extract Release Notes
+        id: notes
+        run: |
+          # Extract [Unreleased] section from CHANGELOG
+          NOTES=$(awk '/## \[Unreleased\]/{found=1; next} /^## \[/{found=0} found' docs/CHANGELOG.md)
+          echo "notes<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$NOTES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: 🚀 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.validate-release.outputs.version }}
+          name: Release ${{ needs.validate-release.outputs.version }}
+          body: ${{ steps.notes.outputs.notes }}
+          draft: false
+          prerelease: false
+
+      - name: 📋 Update CHANGELOG
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          DATE=$(date '+%Y-%m-%d')
+          # Move Unreleased to versioned section
+          sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n### Added\n- (nothing yet)\n\n---\n\n## [$VERSION] — $DATE/" docs/CHANGELOG.md
+          git add docs/CHANGELOG.md
+          git commit -m "docs: update CHANGELOG for $VERSION" || echo "No changes to commit"
+          git push origin release || echo "Nothing to push"
+
+  # ── Summary ──────────────────────────────────────────────
+  release-summary:
+    name: 📊 Release Summary
+    runs-on: ubuntu-latest
+    needs: [validate-release, full-test, create-release]
+    if: always()
+    steps:
+      - name: 📊 Summary
+        run: |
+          echo "# 🚀 Release ${{ needs.validate-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Validation | ${{ needs.validate-release.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.full-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Release | ${{ needs.create-release.result }} |" >> $GITHUB_STEP_SUMMARY

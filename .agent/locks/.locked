@@ -1,0 +1,46 @@
+{
+  "format_version": "1.0",
+  "last_updated": "2026-02-23T00:00:00Z",
+  "updated_by": "system-init",
+  "locks": [
+    {
+      "id": "lock-0001",
+      "file_or_folder": ".agent/MASTER_INSTRUCTIONS.md",
+      "scope": "file",
+      "type": "HARD",
+      "locked_by": "human",
+      "locked_at": "2026-02-23T00:00:00Z",
+      "expires_at": null,
+      "reason": "Master instruction file — requires human approval for any changes",
+      "handover_required": false,
+      "handover_to": null,
+      "metadata": { "governance": "hard" }
+    },
+    {
+      "id": "lock-0002",
+      "file_or_folder": ".agent/config/locking.config.md",
+      "scope": "file",
+      "type": "HARD",
+      "locked_by": "human",
+      "locked_at": "2026-02-23T00:00:00Z",
+      "expires_at": null,
+      "reason": "Locking config — self-referential, requires human governance",
+      "handover_required": false,
+      "handover_to": null,
+      "metadata": { "governance": "hard" }
+    },
+    {
+      "id": "lock-0003",
+      "file_or_folder": ".agent/roles/roles.md",
+      "scope": "file",
+      "type": "HARD",
+      "locked_by": "human",
+      "locked_at": "2026-02-23T00:00:00Z",
+      "expires_at": null,
+      "reason": "Role definitions — changes affect all agents, requires human review",
+      "handover_required": false,
+      "handover_to": null,
+      "metadata": { "governance": "hard" }
+    }
+  ]
+}

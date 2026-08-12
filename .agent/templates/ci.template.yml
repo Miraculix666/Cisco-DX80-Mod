@@ -1,0 +1,150 @@
+# ============================================================
+# FILE: .github/workflows/ci.yml
+# PURPOSE: Continuous integration — runs on all branches
+# DEPENDS ON: scripts/health-check.sh, project test suite
+# DEPENDED ON BY: Release workflow (gate), PR validation
+# ============================================================
+
+name: 🤖 CI — Framework & Code
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [release, dev]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ── [1] Framework Health ─────────────────────────────────
+  framework-health:
+    name: 🏥 Framework Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🔒 Validate Lock File
+        run: python3 -c "import json; json.load(open('.agent/locks/.locked'))" && echo "✅ .locked is valid JSON"
+
+      - name: 🏥 Run Health Check
+        run: bash scripts/health-check.sh
+
+      - name: 📥 Check Dump Inbox
+        run: |
+          COUNT=$(find dump/inbox/ -type f 2>/dev/null | wc -l)
+          if [ "$COUNT" -gt 0 ]; then
+            echo "::warning::Dump inbox has $COUNT file(s) awaiting processing"
+          else
+            echo "✅ Dump inbox empty"
+          fi
+
+  # ── [2] Lint & Format ────────────────────────────────────
+  lint:
+    name: 🔍 Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 📝 Validate Markdown
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: |
+            **/*.md
+            !node_modules/**
+            !dump/inbox/**
+        continue-on-error: true  # Warn, don't fail on MD style
+
+      - name: 🔒 Validate JSON Files
+        run: |
+          echo "Validating JSON files..."
+          find . -not -path './.git/*' -name '*.json' -exec python3 -m json.tool {} > /dev/null \;
+          echo "✅ All JSON files valid"
+
+      - name: 📋 Check Required Headers
+        run: |
+          echo "[1/3] Checking .agent/ files for headers..."
+          for f in .agent/config/*.md .agent/roles/*.md .agent/memory/*.md; do
+            if ! grep -q "PURPOSE:" "$f" 2>/dev/null; then
+              echo "::warning file=$f::Missing PURPOSE header in $f"
+            fi
+          done
+          echo "✅ Header check complete"
+
+  # ── [3] Tests ────────────────────────────────────────────
+  test:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+    needs: [framework-health, lint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧪 Run Script Tests
+        run: |
+          echo "[1/2] Testing health-check.sh..."
+          bash scripts/health-check.sh && echo "✅ Health check passed"
+          
+          echo "[2/2] Testing consolidate.sh (report-only)..."
+          bash scripts/consolidate.sh --report-only && echo "✅ Consolidate report passed"
+
+      # ── Add your language-specific test steps below ──────
+      # Example for Node.js:
+      # - name: Setup Node
+      #   uses: actions/setup-node@v4
+      #   with: { node-version: '20' }
+      # - run: npm ci && npm test
+
+      # Example for Python:
+      # - name: Setup Python
+      #   uses: actions/setup-python@v5
+      #   with: { python-version: '3.11' }
+      # - run: pip install -r requirements.txt && pytest
+
+  # ── [4] Security ─────────────────────────────────────────
+  security:
+    name: 🔐 Security Scan
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔐 Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          extra_args: --only-verified
+        continue-on-error: true
+
+      - name: 📦 Dependency Vulnerability Check
+        run: |
+          echo "ℹ️ Add language-specific vulnerability scanner here"
+          echo "Examples: npm audit, pip-audit, cargo audit, govulncheck"
+          # npm audit --audit-level=high
+          # pip-audit
+
+  # ── Summary ──────────────────────────────────────────────
+  ci-complete:
+    name: ✅ CI Complete
+    runs-on: ubuntu-latest
+    needs: [framework-health, lint, test, security]
+    if: always()
+    steps:
+      - name: 📊 Summary
+        run: |
+          echo "# CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Framework Health | ${{ needs.framework-health.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY

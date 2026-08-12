@@ -1,0 +1,112 @@
+# ============================================================
+# FILE: .gitlab-ci.yml
+# PURPOSE: GitLab CI/CD — equivalent to .github/workflows/
+# DEPENDS ON: scripts/, .agent/locks/.locked
+# REFERENCE: https://docs.gitlab.com/ee/ci/ [docs/SOURCES.md#S-0009]
+# ============================================================
+
+image: ubuntu:22.04
+
+variables:
+  GIT_DEPTH: 0
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+stages:
+  - health
+  - lint
+  - test
+  - security
+  - release
+
+# ── Templates ─────────────────────────────────────────────────
+.base:
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq python3 git bash
+
+# ── [health] Framework Health ─────────────────────────────────
+framework-health:
+  extends: .base
+  stage: health
+  script:
+    - echo "🏥 Running framework health check..."
+    - python3 -c "import json; json.load(open('.agent/locks/.locked'))" && echo "✅ .locked valid JSON"
+    - bash scripts/health-check.sh
+    - |
+      COUNT=$(find dump/inbox/ -type f 2>/dev/null | wc -l)
+      [ "$COUNT" -gt 0 ] && echo "WARNING: Dump inbox has $COUNT file(s)" || echo "✅ Inbox empty"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# ── [lint] Markdown & JSON ────────────────────────────────────
+lint-json:
+  extends: .base
+  stage: lint
+  script:
+    - echo "🔍 Validating JSON files..."
+    - find . -not -path './.git/*' -name '*.json' -exec python3 -m json.tool {} > /dev/null \;
+    - echo "✅ All JSON files valid"
+  needs: [framework-health]
+
+lint-headers:
+  extends: .base
+  stage: lint
+  script:
+    - echo "📋 Checking required file headers..."
+    - |
+      for f in .agent/config/*.md .agent/roles/*.md .agent/memory/*.md; do
+        grep -q "PURPOSE:" "$f" 2>/dev/null || echo "WARNING: Missing PURPOSE header in $f"
+      done
+    - echo "✅ Header check complete"
+  needs: [framework-health]
+
+# ── [test] Scripts & Suite ────────────────────────────────────
+test-scripts:
+  extends: .base
+  stage: test
+  script:
+    - echo "🧪 Testing scripts..."
+    - bash scripts/health-check.sh
+    - bash scripts/consolidate.sh --report-only
+    - echo "✅ All script tests passed"
+  needs: [lint-json, lint-headers]
+  # Add your test commands below:
+  # - npm test
+  # - pytest
+  # - go test ./...
+
+# ── [security] Secret & Dep scan ──────────────────────────────
+security-scan:
+  extends: .base
+  stage: security
+  script:
+    - echo "🔐 Running security scan..."
+    - echo "Add: npm audit / pip-audit / cargo audit / govulncheck"
+    - echo "✅ Security scan placeholder passed"
+  needs: [lint-json]
+  allow_failure: true
+
+# ── [release] Release gate ────────────────────────────────────
+release:
+  extends: .base
+  stage: release
+  script:
+    - echo "🚀 Release gate checks..."
+    - bash scripts/health-check.sh
+    - echo "Tagging release..."
+    - git config user.email "ci@gitlab"
+    - git config user.name "GitLab CI"
+    - |
+      LATEST=$(git tag --sort=-version:refname | head -1 || echo "v0.0.0")
+      IFS='.' read -r major minor patch <<< "${LATEST#v}"
+      VERSION="v${major}.${minor}.$((patch + 1))"
+      git tag -a "$VERSION" -m "Release $VERSION [ci skip]"
+      git push origin "$VERSION"
+      echo "✅ Released $VERSION"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "release"'
+  needs: [test-scripts, security-scan]

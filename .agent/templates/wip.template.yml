@@ -1,0 +1,58 @@
+# ============================================================
+# FILE: .github/workflows/wip.yml
+# PURPOSE: Lightweight CI for dev/wip branch — faster feedback
+# DEPENDS ON: scripts/health-check.sh
+# ============================================================
+
+name: 🔵 WIP/Dev Pipeline
+
+on:
+  push:
+    branches: [dev, wip, 'feat/**', 'fix/**', 'refactor/**', 'agent/**']
+
+concurrency:
+  group: wip-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  quick-check:
+    name: ⚡ Quick Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🔒 Validate .locked
+        run: python3 -c "import json; json.load(open('.agent/locks/.locked'))" && echo "✅ Valid"
+
+      - name: 🏥 Health Check
+        run: bash scripts/health-check.sh
+
+      - name: 📥 Inbox Check
+        run: |
+          COUNT=$(find dump/inbox/ -type f 2>/dev/null | wc -l)
+          [ "$COUNT" -gt 0 ] && echo "::notice::Dump inbox: $COUNT file(s) pending" || true
+
+      - name: 📝 Lint JSON
+        run: |
+          find . -not -path './.git/*' -name '*.json' -exec python3 -m json.tool {} > /dev/null \;
+          echo "✅ JSON valid"
+
+  # Add fast unit tests here (skip integration/E2E for WIP speed)
+  fast-tests:
+    name: ⚡ Fast Unit Tests
+    runs-on: ubuntu-latest
+    needs: quick-check
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🧪 Script Tests
+        run: |
+          bash scripts/health-check.sh
+          bash scripts/consolidate.sh --report-only
+          echo "✅ Script tests passed"
+      # Add your fast unit test command here

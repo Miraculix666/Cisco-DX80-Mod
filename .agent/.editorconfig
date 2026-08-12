@@ -1,0 +1,56 @@
+# ============================================================
+# FILE: .editorconfig
+# PURPOSE: Enforce consistent editor settings across all agents and humans
+# REFERENCE: https://editorconfig.org/ [docs/SOURCES.md#S-0007]
+# ============================================================
+
+root = true
+
+# ── All files ─────────────────────────────────────────────────
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# ── Markdown ──────────────────────────────────────────────────
+[*.md]
+trim_trailing_whitespace = false   # MD allows trailing spaces for line breaks
+max_line_length = 120
+
+# ── JSON ──────────────────────────────────────────────────────
+[*.json]
+indent_size = 2
+
+# ── YAML / CI configs ─────────────────────────────────────────
+[*.{yml,yaml}]
+indent_size = 2
+
+# ── Shell scripts ─────────────────────────────────────────────
+[*.sh]
+indent_size = 2
+shell_variant = bash
+
+# ── Python ────────────────────────────────────────────────────
+[*.py]
+indent_size = 4
+max_line_length = 88   # Black formatter default
+
+# ── JavaScript / TypeScript ───────────────────────────────────
+[*.{js,ts,jsx,tsx}]
+indent_size = 2
+
+# ── Go ────────────────────────────────────────────────────────
+[*.go]
+indent_style = tab
+indent_size = 4
+
+# ── Rust ──────────────────────────────────────────────────────
+[*.rs]
+indent_size = 4
+
+# ── Makefile requires tabs ────────────────────────────────────
+[Makefile]
+indent_style = tab
