@@ -38,6 +38,33 @@ This framework provides a **universal, language-agnostic, multi-agent-ready proj
 
 ---
 
+## 📂 Repository-Level Split Standard
+
+DU AGIERST AB SOFORT STRENG NACH DEM DEZENTRALEN REPOSITORY-SPLIT-STANDARD UND DER NEUEN ORDNERSTRUKTUR UND NAMENSGEBUNG!
+
+Überprüfe und beachte für alle Arbeiten an diesem System folgende unumstößliche Kernregeln:
+
+### 1. Repository-Level Split (Sicherheit & Open-Source-Capability)
+Kein Code- oder Grundsystem-Repository darf sensible Konfigurationen, IP-Adressen, Passwörter oder Hosts-Daten enthalten!
+Jede Domäne ist in ZWEI bis DREI getrennte Repositories unterteilt:
+- **core / infra / ui / app**: Beinhaltet AUSSCHLIESSLICH den Quellcode, Templates, Docker/LXC-Setups und Skripte (Vollständig teilbar/Open-Source).
+- **config**: Beinhaltet AUSSCHLIESSLICH die privaten Einstellungen (Unterteilt in `/global` für systemweite Standards und `/hosts` für spezifische Maschinen/IPs).
+- **backup**: Beinhaltet AUSSCHLIESSLICH historische Datenbank-Dumps, System-Snapshots und Archive.
+
+### 2. Agenten & Prompts Trennung
+Das Repository `agents_and prompts` beinhaltet AUSSCHLIESSLICH die systemweiten Standards (`SYSTEM_WIDE_STANDARD.md`), Ausführungs-Direktiven (`JULES_EXECUTION_DIRECTIVE.md`), Prompt-Templates und Verhaltensregeln der Agenten. Es enthält KEINE Host- oder Infrastruktur-Configs!
+
+### 3. Repo-Namensschema & Domänen
+- **LLM Stack**: `llm_stack_core`, `llm_stack_config`, `llm_stack_backup`
+- **Home Assistant**: `ha_core`, `ha_config`, `ha_backup_full`, `ha_backup_slim`, `ha_addons_ext`
+- **Infrastructure**: `homelab_infra`, `homelab_config`, `proxmox_host_backup`
+- **Agents & Prompts**: `agents_and_prompts`
+
+### 4. Anweisung
+Führe alle Konfigurationsänderungen, Code-Refactorings und Pushes ausschließlich unter Einhaltung dieses Schemas durch. Speichere maschinenspezifische Daten NIEMALS im core/infra Repo, sondern immer im jeweiligen config Repo unter `/hosts/<hostname>_config.yaml`!
+
+---
+
 ## 🏗️ Mandatory File Dependency Map
 
 > Every agent MUST understand and respect these dependencies.
@@ -295,6 +322,42 @@ If project context is lost, execute in order:
 ☐ 8. Read locks/LOCK_REGISTRY.md for history
 ☐ 9. Proceed with Step 1 of Agent Session Protocol above
 ```
+
+---
+
+## 📐 Project Growth & Maturity Review Protocol
+
+### 1. Triggers — Wann wird ein Growth Review durchgeführt?
+Ein Growth Review wird durchgeführt bei:
+1. **Jeder 10. Agent-Session** (ergänzend zum 5-Session Optimization Protocol)
+2. **Expliziter Anforderung** durch den User
+3. **Erreichen folgender Schwellwerte** (automatisch im Session Start-Check):
+
+| Metrik | Schwellwert | Empfohlene Aktion |
+|---|---|---|
+| **Dateien im Repo** | > 20 Dateien (ohne `.agent/`, `.git/`) | Ordnerstruktur prüfen, `src/` o. Ä. einführen |
+| **LOC einer Datei** | > 500 Zeilen | Aufteilen in Module/Funktionen |
+| **LOC gesamt** | > 2.000 Zeilen | Architektur-Review, Package-Struktur prüfen |
+| **Plattformen** | > 1 OS-Ziel (Win + Linux) | Cross-Plattform Abstraktion (Docker, Polyglot) |
+| **Sprachen im Repo** | > 2 Sprachen | Primärsprache definieren, Build-System einführen |
+| **Externe Deps** | > 5 ohne Deklaration | Package Manager einführen (`requirements.txt`, `package.json`) |
+| **Inline-Code** | Shell/PowerShell mit > 20 Zeilen Python/C/SQL | Script extrahieren |
+| **Test-Abdeckung** | 0 Tests bei > 500 LOC | Test-Framework einführen (Pester, pytest) |
+
+### 2. Review-Checkliste
+Der Agent prüft bei jedem Growth Review:
+- **Scope**: Ist der Projekt-Scope noch klar definiert oder wächst das Tool zu einer All-in-One Suite?
+- **Architektur**: Ist die Verzeichnisstruktur für die Projektgröße noch angemessen?
+- **Sprachen & Plattform**: Ist die gewählte Sprache noch optimal? (z.B. Migration von Bash zu Python bei komplexer JSON/Rest-Logik).
+- **Dependencies**: Sind alle externen Pakete deklariert und isoliert (venv, node_modules)?
+- **Qualität & Tests**: Gibt es einen automatisierten Test-Runner (unattended, non-interactive)?
+- **Dokumentation**: Ist die README aktuell? Gibt es ein CHANGELOG bei > 5 Releases?
+
+### 3. Projekt-Reifegrade (Maturity Levels)
+- 🟢 **L0 (Einzelscript)**: 1 Datei, < 200 LOC. Erfordert: Header-Kommentar + standardisiertes Error Handling.
+- 🟡 **L1 (Multi-File Tool)**: 2–10 Dateien, < 1.000 LOC. Erfordert: `README.md`, `src/` Ordner, `justfile` für grundlegende Abläufe.
+- 🟠 **L2 (Strukturiertes Projekt)**: 10–30 Dateien, < 5.000 LOC, Test-Suite. Erfordert: `.agent/`, `docs/`, `tests/`, `CHANGELOG.md`, Versionierung.
+- 🔴 **L3 (Package / Service)**: 30+ Dateien, APIs, Multi-Plattform. Erfordert: Versionierung (`version.json`), Build-System, Docker, CI/CD Pipeline.
 
 ---
 

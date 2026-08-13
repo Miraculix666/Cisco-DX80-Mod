@@ -59,6 +59,16 @@ In this file, maintain the full entry.
 |---|---|---|---|---|
 | S-0012 | Internal Prompt Collection | Original prompt set provided for this framework | prompts.config.md | 🟢 Active |
 
+### Perplexity Research & AI Personas
+
+| ID | Source | URL | Referenced In | Status |
+|---|---|---|---|---|
+| S-0013 | Bash/Curl Error Handling | `https://www.perplexity.ai/search/finde-deen-fehler-bash-curl-fs-N2zHPt.VTrixaY_WMKk6GA#0` | homelab_infra/agent.md | 🟢 Active |
+| S-0014 | PR Perfection | `https://www.perplexity.ai/search/perfekioniere-den-folgenden-pr-bekkSeOdT0OIfEmG4Ztiuw#0` | homelab_infra/agent.md | 🟢 Active |
+| S-0015 | Prompt Generator Mode | `https://www.perplexity.ai/search/craft-prompt-generator-mode-la-T6dt.2HTQQW4Kla3EV.YaQ#0` | homelab_infra/agent.md | 🟢 Active |
+| S-0016 | PS-Coding Persona | `https://www.perplexity.ai/search/craft-prompt-for-ps-coding-pow-NOOFlNkETc.L2eRaOxhIzA#0` | homelab_infra/agent.md | 🟢 Active |
+| S-0017 | LLM Prompt Style | `https://www.perplexity.ai/search/llm-promt-syle-konzept-otimize-dusUtqJqTNy46HWjKFXRsA#2` | homelab_infra/agent.md | 🟢 Active |
+
 ---
 
 ## 📝 Source Addition Protocol

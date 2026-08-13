@@ -50,7 +50,11 @@
 - 🌳 Sub-folder `.agent/Agent.md` files override this root agent for their scope.
 - Settings inheritance: `Workspace → Repo/.vscode/settings.json → Subfolder/.editorconfig`
 
-### 2.4 Quality Gates
+### 2.4 Repository-Specific Overrides (agent.md)
+- 📄 **Always check for a root-level `agent.md` file**: At the start of every session in a repository, the agent MUST check if a physical `agent.md` file exists in the repository root directory (e.g. `C:\GitHub\<repo>\agent.md`).
+- ⚙️ **Load overrides**: If it exists, the agent MUST read it immediately. The repository-specific rules, inventories, domain specializations, and workflows defined in this root-level `agent.md` override any generic master configurations.
+
+### 2.5 Quality Gates
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -66,7 +70,7 @@
 └─────────────────────────────────────────────────┘
 ```
 
-### 2.5 Continuous Optimization & Best Practices
+### 2.6 Continuous Optimization & Best Practices
 - ⚡ **Always Optimize**: Before implementing any solution, explicitly check if there is a better, faster, more best-practice, multithreaded (e.g., using runspaces, jobs, or parallel loops), or otherwise optimized way to achieve the goal.
 - 📈 **Performance & Scaling**: Ensure scripts scale efficiently, minimize network/AD queries (avoid N+1 query patterns), and optimize file I/O operations.
 

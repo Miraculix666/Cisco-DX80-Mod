@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "description": "Script folder classification standard per .agent/Agent.md section 4",
+  "targetDirectories": {
+    "AD": "scripts/AD",
+    "User": "scripts/User",
+    "Network": "scripts/network",
+    "System": "scripts/system",
+    "Analysis": "scripts/analysis",
+    "Tests": "tests",
+    "Dump": "dump",
+    "WIP": "WIP"
+  },
+  "classificationRules": [
+    {
+      "category": "Tests",
+      "patterns": ["*.Tests.ps1", "*test*.ps1", "*test*.sh"],
+      "targetDir": "tests"
+    },
+    {
+      "category": "AD",
+      "keywords": ["ActiveDirectory", "ADAccount", "sAMAccountName", "ADCopy", "Get-AD", "Set-AD", "Unlock-AD", "DomainController", "OU=", "L-Kennung"],
+      "targetDir": "scripts/AD"
+    },
+    {
+      "category": "User",
+      "keywords": ["MultiRDP", "UserCopy", "UserPWReset", "ChangeUserProps", "Outlook", "Desktop", "UserSession"],
+      "targetDir": "scripts/User"
+    },
+    {
+      "category": "Network",
+      "keywords": ["NetworkAnalyse", "IPAddress", "Ping", "PortScan", "Firewall", "ebusd", "Routing", "DNS"],
+      "targetDir": "scripts/network"
+    },
+    {
+      "category": "System",
+      "keywords": ["Sync-", "Watch-", "SCCM", "BitLocker", "Hardening", "Backup", "Deploy", "Install-", "bootstrap", "VSCode"],
+      "targetDir": "scripts/system"
+    },
+    {
+      "category": "Analysis",
+      "keywords": ["Log", "Audit", "Benchmark", "Metrics", "Report", "Analysis"],
+      "targetDir": "scripts/analysis"
+    }
+  ]
+}
