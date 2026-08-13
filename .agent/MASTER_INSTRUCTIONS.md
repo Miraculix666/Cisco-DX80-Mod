@@ -30,17 +30,9 @@ This framework provides a **universal, language-agnostic, multi-agent-ready proj
 
 ---
 
-## 🔧 Tooling Mandate (pyinfra & just)
-
-- **pyinfra**: For all system setup, environment bootstrapping, and service configurations, `pyinfra` playbooks MUST be used whenever possible to ensure declarative, agentless automation.
-- **just**: A `justfile` acts as the universal command runner and CLI interface in each repository for all setup, build, update, backup, and repair tasks.
-- **Incremental Migration**: Existing scripts, cron jobs, and manual tasks must be refactored step-by-step to use `pyinfra` and `just` whenever code modifications are made.
-
----
-
 ## 🔗 Workspace Integration & Deployment
 
-- **Master Directory Junction Exception:** The master `.agent/` folder is linked across all child repositories via Windows Directory Junctions (`mklink /j`) pointing directly to `C:\GitHub\agents_and_prompts\.agent` to maintain a single source of truth. No other code-crossing junctions are allowed.
+- **No Repository Crossing Links:** Repositories must remain completely independent. Do not use directory junctions or symbolic links to share code, scripts, or configurations between repositories.
 - **Auto-Clone neuer Repos:** Sobald ein neues Repository remote erstellt wurde, soll es umgehend lokal geklont werden, damit die lokale Workspace-Struktur lückenlos bleibt.
 - **Workspace-Dateien:** Jedes Repository MUSS in den globalen Workspace `all.code-workspace` inkludiert sein und zudem über einen eigenen dedizierten Workspace (z.B. `<RepoName>.code-workspace` im zentralen Verzeichnis) verfügen.
 
