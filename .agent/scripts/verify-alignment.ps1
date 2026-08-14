@@ -1,4 +1,4 @@
-# verify-alignment.ps1
+﻿# verify-alignment.ps1
 # PURPOSE: Verify the correct implementation of the repository split and independent agent configurations
 # LAST MODIFIED: 2026-08-12
 # MODIFIED BY: Agent
@@ -48,8 +48,8 @@ Get-ChildItem -Path "C:\GitHub" -Directory | ForEach-Object {
 # 4. Verify Global .agent Junction
 Write-Host "`n[4] Checking Global Root .agent Junction..." -ForegroundColor Yellow
 $rootJunction = Get-Item "C:\GitHub\.agent" -ErrorAction SilentlyContinue
-if ($rootJunction -and $rootJunction.Attributes -match "ReparsePoint" -and $rootJunction.LinkTarget -like "*agents_and prompts*") {
-    Write-Host "  [OK] Global .agent points to agents_and prompts/.agent: $($rootJunction.LinkTarget)" -ForegroundColor Green
+if ($rootJunction -and $rootJunction.Attributes -match "ReparsePoint" -and $rootJunction.LinkTarget -like "*agents_and_prompts*") {
+    Write-Host "  [OK] Global .agent points to agents_and_prompts/.agent: $($rootJunction.LinkTarget)" -ForegroundColor Green
 } else {
     Write-Host "  [FAIL] Global .agent junction is invalid or points to wrong target" -ForegroundColor Red
 }
@@ -85,7 +85,7 @@ $remotes = @{
     "1lm stack core"     = "LLM_Stack.git"
     "11m stack_config"   = "11m_stack_config.git"
     "11m stack_backup"   = "11m_stack_backup.git"
-    "agents_and prompts" = "agents_and_prompts.git"
+    "agents_and_prompts" = "agents_and_prompts.git"
     "homelab infra"      = "homelab_infra.git"
     "homelab config"     = "homelab_config.git"
 }
@@ -103,3 +103,4 @@ foreach ($repo in $remotes.Keys) {
 }
 
 Write-Host "`n=== Audit Complete ===" -ForegroundColor Cyan
+
